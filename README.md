@@ -61,7 +61,7 @@ cd dashboard
 python app.py
 ```
 
-The dashboard will be available at `http://localhost:9000` (or your configured port).
+The dashboard will be available at `http://localhost:7000` (or your configured port).
 
 ### 4. First-time setup
 
