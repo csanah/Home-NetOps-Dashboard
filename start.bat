@@ -7,13 +7,30 @@ echo ============================================
 echo.
 
 :: ---- Check Python ----
-where python >nul 2>&1
+python --version >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [ERROR] Python is not installed or not in PATH.
-    echo         Download it from https://www.python.org/downloads/
-    echo         Make sure to check "Add Python to PATH" during install.
+    echo [..] Python is not installed. Attempting to install via winget...
+    echo.
+    winget install Python.Python.3.12 --accept-package-agreements --accept-source-agreements --silent
+    if !errorlevel! neq 0 (
+        echo [ERROR] Failed to install Python automatically.
+        echo         Please install it manually from https://www.python.org/downloads/
+        echo         Make sure to check "Add Python to PATH" during install.
+        echo.
+        echo         If you already installed Python, disable the Windows Store
+        echo         alias in: Settings ^> Apps ^> Advanced app settings ^> App execution aliases
+        pause
+        exit /b 1
+    )
+    echo [OK] Python installed successfully.
+    echo.
+    echo ============================================
+    echo   Python was just installed. PATH needs to
+    echo   be refreshed. Please CLOSE this window
+    echo   and run start.bat again.
+    echo ============================================
     pause
-    exit /b 1
+    exit /b 0
 )
 
 for /f "tokens=*" %%v in ('python --version 2^>^&1') do set PYVER=%%v
@@ -102,10 +119,14 @@ echo.
 set DASHBOARD_PORT=!DASHBOARD_PORT!
 start "" /b venv\Scripts\pythonw.exe dashboard\app.py
 
-:: ---- Wait a moment then confirm ----
+:: ---- Wait for the server to start, then open the browser ----
+echo [..] Waiting for server to start...
 timeout /t 3 /nobreak >nul
+start "" http://localhost:!DASHBOARD_PORT!
 echo [OK] Dashboard is running in the background on port !DASHBOARD_PORT!
-echo      Open http://localhost:!DASHBOARD_PORT! in your browser.
+echo      Your browser should open automatically.
+echo      If not, open http://localhost:!DASHBOARD_PORT! manually.
+echo.
 echo      To stop it, close the process from Task Manager or run:
 echo        taskkill /f /im pythonw.exe
 echo.

@@ -21,7 +21,8 @@ PYTHON = os.path.join(
 )
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 APP_SCRIPT = os.path.join(APP_DIR, "app.py")
-URL = "http://localhost:9000"
+PORT = int(os.environ.get("DASHBOARD_PORT", 7000))
+URL = f"http://localhost:{PORT}"
 
 server_proc = None
 icon = None
@@ -90,7 +91,7 @@ def health_check():
         set_state("stopped")
 
 
-def kill_port_holders(port=9000):
+def kill_port_holders(port=PORT):
     """Kill any process listening on the given port to prevent stacking."""
     try:
         out = subprocess.check_output(
@@ -121,7 +122,7 @@ def start_server(_=None):
         return  # already running
 
     set_state("starting")
-    # Kill any stale instances on port 9000 before starting fresh
+    # Kill any stale instances on the dashboard port before starting fresh
     kill_port_holders()
     time.sleep(0.3)
     server_proc = subprocess.Popen(
