@@ -110,7 +110,7 @@ Visit the dashboard and go to **Settings** to:
 See `.env.example` for the full list. Key variables:
 
 - **DASHBOARD_PIN** — Optional PIN for login protection (leave empty to disable)
-- **DASHBOARD_PORT** — Server port (default: 9000)
+- **DASHBOARD_PORT** — Server port (default: 7000)
 - **\*_HOST** — IP addresses for each system
 - **\*_API_KEY / \*_TOKEN** — API credentials
 - **\*_SSH_USER / \*_SSH_PASS** — SSH credentials
