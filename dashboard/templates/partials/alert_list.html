@@ -1,0 +1,16 @@
+{% if not alerts %}
+<div class="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-lg text-sm">
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+  All systems operational
+</div>
+{% else %}
+<div class="space-y-2">
+  {% for alert in alerts %}
+  <div class="flex items-start gap-2 p-3 rounded-lg text-sm
+    {{ 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300' if alert.level == 'error' else 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300' }}">
+    <svg class="w-4 h-4 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+    {{ alert.message }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}

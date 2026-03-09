@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setup — NetOps Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class', theme: { extend: {} } }
+  </script>
+  <style>
+    input:-webkit-autofill,
+    input:-webkit-autofill:focus {
+      -webkit-box-shadow: 0 0 0 1000px rgb(31 41 55) inset !important;
+      -webkit-text-fill-color: #f3f4f6 !important;
+      caret-color: #f3f4f6;
+    }
+    .light input:-webkit-autofill,
+    .light input:-webkit-autofill:focus {
+      -webkit-box-shadow: 0 0 0 1000px white inset !important;
+      -webkit-text-fill-color: #111827 !important;
+      caret-color: #111827;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen flex items-center justify-center px-4 py-8">
+
+  <div class="w-full max-w-2xl">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
+
+      <!-- Step indicator -->
+      <div class="flex items-center justify-center gap-2 mb-8">
+        <button onclick="goToStep(1)" id="pill-1" class="w-8 h-8 rounded-full text-sm font-bold flex items-center justify-center transition-colors">1</button>
+        <div class="w-8 h-0.5 bg-gray-300 dark:bg-gray-600"></div>
+        <button onclick="goToStep(2)" id="pill-2" class="w-8 h-8 rounded-full text-sm font-bold flex items-center justify-center transition-colors">2</button>
+        <div class="w-8 h-0.5 bg-gray-300 dark:bg-gray-600"></div>
+        <button onclick="goToStep(3)" id="pill-3" class="w-8 h-8 rounded-full text-sm font-bold flex items-center justify-center transition-colors">3</button>
+        <div class="w-8 h-0.5 bg-gray-300 dark:bg-gray-600"></div>
+        <button onclick="goToStep(4)" id="pill-4" class="w-8 h-8 rounded-full text-sm font-bold flex items-center justify-center transition-colors">4</button>
+      </div>
+
+      <!-- Step 1: Welcome -->
+      <div class="wizard-step" id="step-1">
+        <div class="text-center mb-6">
+          <div class="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-blue-100 dark:bg-blue-900/40 mb-4">
+            <svg class="w-7 h-7 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+          </div>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Welcome to NetOps Dashboard</h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Let's get your dashboard configured. This wizard will set up your credentials and system connections.</p>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="setup-pin">Dashboard PIN <span class="text-red-500">*</span></label>
+            <input type="password" id="setup-pin" name="DASHBOARD_PIN" required
+              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+              placeholder="Enter a PIN to protect the dashboard">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="setup-port">Dashboard Port</label>
+            <input type="number" id="setup-port" name="DASHBOARD_PORT" value="{{ dashboard_port }}"
+              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors">
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Core Systems -->
+      <div class="wizard-step hidden" id="step-2">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">Core Systems</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Configure your main network infrastructure. Leave blank to skip a system.</p>
+
+        <!-- UDM Pro -->
+        <div class="mb-6 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-indigo-600 dark:text-indigo-400">UDM Pro</h3>
+            <button type="button" onclick="testFromWizard('udm_api', this)" class="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">Test API</button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Host</label>
+              <input type="text" name="UDM_HOST" class="setup-input w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">API Key</label>
+              <input type="password" name="UDM_API_KEY" class="setup-input w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">SSH Username</label>
+              <input type="text" name="UDM_SSH_USER" value="root" class="setup-input w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">SSH Password</label>
+              <input type="password" name="UDM_SSH_PASS" class="setup-input w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- Proxmox -->
+        <div class="mb-6 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-orange-600 dark:text-orange-400">Proxmox</h3>
+            <button type="button" onclick="testFromWizard('proxmox_api', this)" class="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">Test API</button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Host</label>
+              <input type="text" name="PROXMOX_HOST" class="setup-input w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Port</label>
+              <input type="number" name="PROXMOX_PORT" value="8006" class="setup-input w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">API Token</label>
+              <input type="password" name="PROXMOX_TOKEN" class="setup-input w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Node Name</label>
+              <input type="text" name="PROXMOX_NODE" class="setup-input w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">SSH Username</label>
+              <input type="text" name="PROXMOX_SSH_USER" value="root" class="setup-input w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">SSH Password</label>
+              <input type="password" name="PROXMOX_SSH_PASS" class="setup-input w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- Home Assistant -->
+        <div class="p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-cyan-600 dark:text-cyan-400">Home Assistant</h3>
+            <button type="button" onclick="testFromWizard('ha_api', this)" class="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">Test API</button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Host</label>
+              <input type="text" name="HA_HOST" class="setup-input w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Port</label>
+              <input type="number" name="HA_PORT" value="8123" class="setup-input w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Bearer Token</label>
+              <input type="password" name="HA_TOKEN" class="setup-input w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Additional Systems -->
+      <div class="wizard-step hidden" id="step-3">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">Additional Systems</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Optional systems. Leave blank to skip.</p>
+
+        <!-- Synology NAS -->
+        <div class="mb-6 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-green-600 dark:text-green-400">Synology NAS</h3>
+            <button type="button" onclick="testFromWizard('nas_ssh', this)" class="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">Test SSH</button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Host</label>
+              <input type="text" name="NAS_HOST" class="setup-input w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">SSH Username</label>
+              <input type="text" name="NAS_SSH_USER" class="setup-input w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">SSH Password</label>
+              <input type="password" name="NAS_SSH_PASS" class="setup-input w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- Bike Computer -->
+        <div class="mb-6 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-pink-600 dark:text-pink-400">Bike Computer</h3>
+            <button type="button" onclick="testFromWizard('bike_ssh', this)" class="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">Test SSH</button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Host</label>
+              <input type="text" name="BIKE_HOST" class="setup-input w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">SSH Username</label>
+              <input type="text" name="BIKE_SSH_USER" class="setup-input w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">SSH Password</label>
+              <input type="password" name="BIKE_SSH_PASS" class="setup-input w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- Media Center -->
+        <div class="p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-purple-600 dark:text-purple-400">Media Center</h3>
+            <button type="button" onclick="testFromWizard('media_ssh', this)" class="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">Test SSH</button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Host</label>
+              <input type="text" name="MEDIA_HOST" class="setup-input w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">SSH Username</label>
+              <input type="text" name="MEDIA_SSH_USER" class="setup-input w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">SSH Password</label>
+              <input type="password" name="MEDIA_SSH_PASS" class="setup-input w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Review -->
+      <div class="wizard-step hidden" id="step-4">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">Review</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Confirm your configuration before completing setup.</p>
+
+        <div id="review-summary" class="space-y-3 mb-6"></div>
+
+        <div id="setup-error" class="hidden mb-4 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-sm text-red-700 dark:text-red-300"></div>
+      </div>
+
+      <!-- Navigation buttons -->
+      <div class="flex justify-between mt-8">
+        <button type="button" id="btn-back" onclick="prevStep()" class="hidden px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+          Back
+        </button>
+        <div class="flex-1"></div>
+        <button type="button" id="btn-next" onclick="nextStep()"
+          class="px-6 py-2 rounded-lg text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors">
+          Next
+        </button>
+      </div>
+
+      <!-- Test result toast -->
+      <div id="test-toast" class="hidden fixed bottom-6 right-6 px-4 py-3 rounded-lg shadow-lg text-sm font-medium z-50 transition-all"></div>
+    </div>
+  </div>
+
+  <script>
+    if (localStorage.getItem('theme') === 'light') {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
+    }
+
+    let currentStep = 1;
+    const totalSteps = 4;
+
+    function updatePills() {
+      for (let i = 1; i <= totalSteps; i++) {
+        const pill = document.getElementById('pill-' + i);
+        if (i === currentStep) {
+          pill.className = 'w-8 h-8 rounded-full text-sm font-bold flex items-center justify-center bg-blue-600 text-white';
+        } else if (i < currentStep) {
+          pill.className = 'w-8 h-8 rounded-full text-sm font-bold flex items-center justify-center bg-green-500 text-white cursor-pointer';
+        } else {
+          pill.className = 'w-8 h-8 rounded-full text-sm font-bold flex items-center justify-center bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400';
+        }
+      }
+    }
+
+    function showStep(step) {
+      document.querySelectorAll('.wizard-step').forEach(el => el.classList.add('hidden'));
+      document.getElementById('step-' + step).classList.remove('hidden');
+      document.getElementById('btn-back').classList.toggle('hidden', step === 1);
+      const nextBtn = document.getElementById('btn-next');
+      if (step === totalSteps) {
+        nextBtn.textContent = 'Complete Setup';
+        nextBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        nextBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+      } else {
+        nextBtn.textContent = 'Next';
+        nextBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+        nextBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+      }
+      updatePills();
+      if (step === totalSteps) buildReview();
+    }
+
+    function goToStep(step) {
+      if (step < currentStep) {
+        currentStep = step;
+        showStep(currentStep);
+      }
+    }
+
+    function nextStep() {
+      if (currentStep === 1) {
+        const pin = document.querySelector('[name="DASHBOARD_PIN"]').value.trim();
+        if (!pin) {
+          document.querySelector('[name="DASHBOARD_PIN"]').focus();
+          document.querySelector('[name="DASHBOARD_PIN"]').classList.add('ring-2', 'ring-red-500');
+          setTimeout(() => document.querySelector('[name="DASHBOARD_PIN"]').classList.remove('ring-2', 'ring-red-500'), 2000);
+          return;
+        }
+      }
+      if (currentStep < totalSteps) {
+        currentStep++;
+        showStep(currentStep);
+      } else {
+        completeSetup();
+      }
+    }
+
+    function prevStep() {
+      if (currentStep > 1) {
+        currentStep--;
+        showStep(currentStep);
+      }
+    }
+
+    function getAllFields() {
+      const data = {};
+      document.querySelectorAll('input[name]').forEach(input => {
+        const val = input.value.trim();
+        if (val) data[input.name] = val;
+      });
+      return data;
+    }
+
+    function buildReview() {
+      const data = getAllFields();
+      const systems = [
+        { name: 'Dashboard', keys: ['DASHBOARD_PIN', 'DASHBOARD_PORT'], color: 'blue' },
+        { name: 'UDM Pro', keys: ['UDM_HOST', 'UDM_API_KEY', 'UDM_SSH_USER', 'UDM_SSH_PASS'], color: 'indigo' },
+        { name: 'Proxmox', keys: ['PROXMOX_HOST', 'PROXMOX_PORT', 'PROXMOX_TOKEN', 'PROXMOX_NODE', 'PROXMOX_SSH_USER', 'PROXMOX_SSH_PASS'], color: 'orange' },
+        { name: 'Home Assistant', keys: ['HA_HOST', 'HA_PORT', 'HA_TOKEN'], color: 'cyan' },
+        { name: 'Synology NAS', keys: ['NAS_HOST', 'NAS_SSH_USER', 'NAS_SSH_PASS'], color: 'green' },
+        { name: 'Bike Computer', keys: ['BIKE_HOST', 'BIKE_SSH_USER', 'BIKE_SSH_PASS'], color: 'pink' },
+        { name: 'Media Center', keys: ['MEDIA_HOST', 'MEDIA_SSH_USER', 'MEDIA_SSH_PASS'], color: 'purple' },
+      ];
+
+      let html = '';
+      for (const sys of systems) {
+        const configured = sys.keys.filter(k => data[k]);
+        const isConfigured = configured.length > 0;
+        const badge = isConfigured
+          ? `<span class="text-xs px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">${configured.length} field${configured.length > 1 ? 's' : ''}</span>`
+          : `<span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">skipped</span>`;
+        html += `<div class="flex items-center justify-between p-3 rounded-lg border border-gray-200 dark:border-gray-700">
+          <span class="font-medium text-sm text-gray-900 dark:text-gray-100">${sys.name}</span>
+          ${badge}
+        </div>`;
+      }
+      document.getElementById('review-summary').innerHTML = html;
+    }
+
+    function completeSetup() {
+      const data = getAllFields();
+      const btn = document.getElementById('btn-next');
+      const errDiv = document.getElementById('setup-error');
+      btn.disabled = true;
+      btn.textContent = 'Setting up...';
+      errDiv.classList.add('hidden');
+
+      fetch('/setup/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+      .then(r => r.json())
+      .then(result => {
+        if (result.success) {
+          window.location.href = '/login';
+        } else {
+          errDiv.textContent = result.error || 'Setup failed';
+          errDiv.classList.remove('hidden');
+          btn.disabled = false;
+          btn.textContent = 'Complete Setup';
+        }
+      })
+      .catch(err => {
+        errDiv.textContent = 'Error: ' + err.message;
+        errDiv.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Complete Setup';
+      });
+    }
+
+    function testFromWizard(system, btn) {
+      const origText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Testing...';
+
+      // First save current field values to env temporarily
+      const data = getAllFields();
+      fetch('/setup/test-save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+      .then(() => fetch('/settings/test/' + system, { method: 'POST' }))
+      .then(r => r.json())
+      .then(result => {
+        btn.disabled = false;
+        btn.textContent = origText;
+        showToast(result.success, result.message);
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.textContent = origText;
+        showToast(false, err.message);
+      });
+    }
+
+    function showToast(success, message) {
+      const toast = document.getElementById('test-toast');
+      toast.textContent = message;
+      toast.className = 'fixed bottom-6 right-6 px-4 py-3 rounded-lg shadow-lg text-sm font-medium z-50 transition-all ' +
+        (success ? 'bg-green-600 text-white' : 'bg-red-600 text-white');
+      setTimeout(() => toast.classList.add('hidden'), 4000);
+    }
+
+    // Init
+    showStep(1);
+  </script>
+</body>
+</html>

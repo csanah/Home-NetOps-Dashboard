@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Claude Chat{% endblock %}
+{% block head %}
+<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col h-[calc(100vh-6rem)]">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-3 flex-shrink-0">
+    <div class="flex items-center gap-3">
+      <h2 class="text-xl font-bold">Claude Chat</h2>
+      <span id="session-status" class="text-xs text-gray-400" role="status" aria-live="polite">Not connected</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="px-2 py-1 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs font-medium">Network Admin</span>
+      <button id="btn-copy-chat" onclick="copyChatHistory()"
+              class="px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-xs font-medium transition-colors"
+              title="Copy full conversation to clipboard">
+        Copy Chat
+      </button>
+      <button id="btn-clear" onclick="clearHistory()"
+              class="px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-xs font-medium transition-colors"
+              title="Clear conversation">
+        Clear
+      </button>
+    </div>
+  </div>
+
+  <!-- Messages area -->
+  <div id="chat-messages" class="flex-1 overflow-y-auto scrollbar-thin rounded-xl bg-gray-50 dark:bg-gray-900 p-4 space-y-4 mb-3">
+    <div id="welcome-msg" class="text-center text-gray-400 dark:text-gray-500 text-sm py-12">
+      Start a conversation with Claude. Running in <strong>Network Admin</strong> mode with full system access.
+    </div>
+  </div>
+
+  <!-- Thinking indicator -->
+  <div id="thinking-indicator" class="hidden flex-shrink-0 mb-2 px-4">
+    <div class="thinking-dots flex items-center gap-1 text-gray-400">
+      <span class="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full inline-block"></span>
+      <span class="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full inline-block"></span>
+      <span class="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full inline-block"></span>
+    </div>
+  </div>
+
+  <!-- Input area -->
+  <div class="flex-shrink-0 flex gap-2 items-end">
+    <textarea id="chat-input"
+              placeholder="Type a message... (Enter to send, Shift+Enter for new line)"
+              rows="2"
+              class="chat-input flex-1 px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"></textarea>
+    <button id="btn-send" onclick="sendMessage()"
+            class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-40 h-[42px]"
+            disabled>
+      Send
+    </button>
+    <button id="btn-stop" onclick="cancelGeneration()"
+            class="hidden px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors h-[42px]">
+      Stop
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/chat.js"></script>
+{% endblock %}

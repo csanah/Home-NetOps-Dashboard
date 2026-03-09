@@ -1,0 +1,24 @@
+# Virtual environment (rebuilt by start.bat)
+venv/
+
+# Node dependencies (reinstalled via npm install)
+node_modules/
+
+# Credentials
+.env
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Claude Code local settings
+.claude/
+
+# OS junk
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Editor settings
+.vscode/
+.idea/

@@ -1,0 +1,36 @@
+{% set s = health.get('nas', {}) %}
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden h-full">
+  <div class="h-1 {{ 'bg-green-500' if s.online else 'bg-red-500' }}"></div>
+  <div class="p-4">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="font-semibold text-sm">{{ s.name or names.nas }}</h3>
+      <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' if s.online else 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' }}">
+        {{ 'Online' if s.online else 'Offline' }}
+      </span>
+    </div>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">{{ s.host }}</p>
+    {% if s.online %}
+      {% if s.pct is not none %}
+      {# Storage usage bar #}
+      <div class="mb-2">
+        <div class="flex justify-between text-xs mb-1">
+          <span class="text-gray-500 dark:text-gray-400">Storage</span>
+          <span class="font-medium">{{ s.used }} / {{ s.total }}</span>
+        </div>
+        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+          <div class="usage-bar h-2 rounded-full {{ 'bg-blue-500' if s.pct | int < 80 else 'bg-yellow-500' if s.pct | int < 90 else 'bg-red-500' }}" style="width: {{ s.pct }}%"></div>
+        </div>
+        <div class="text-right text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">{{ s.pct }}% used</div>
+      </div>
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        {% if s.temp_c is not none %}<div><span class="text-gray-500 dark:text-gray-400">Temp</span><br><span class="font-medium">{{ s.temp_c }}&deg;C</span></div>{% endif %}
+      </div>
+      {% else %}
+      <div class="text-xs"><span class="text-gray-500 dark:text-gray-400">SSH</span><br><span class="font-medium text-green-600">Online</span></div>
+      {% endif %}
+    {% else %}
+    <p class="text-xs text-red-500">Offline (SSH unreachable)</p>
+    {% endif %}
+  </div>
+  {% set key = 'nas' %}{% include "partials/sparkline.html" %}
+</div>

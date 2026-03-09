@@ -1,0 +1,7 @@
+flask
+flask-socketio
+paramiko
+requests
+python-dotenv
+pystray
+Pillow

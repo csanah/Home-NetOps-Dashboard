@@ -1,0 +1,83 @@
+{% set sess = data.sessions %}
+
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+  <div class="h-1" style="background-color: {{ '#E5A00D' if sess and not sess.get('error') else '#d1d5db' }}"></div>
+  <div class="p-4">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="font-semibold text-sm flex items-center gap-2">
+        <svg class="w-4 h-4" style="color: #E5A00D" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Now Playing
+      </h3>
+      {% if sess and not sess.get('error') %}
+      <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' if sess.count > 0 else 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400' }}">
+        {{ sess.count }} session{{ 's' if sess.count != 1 }}
+      </span>
+      {% endif %}
+    </div>
+
+    {% if not data.has_token %}
+      <p class="text-xs text-gray-400">Configure Plex token in Settings</p>
+    {% elif sess and sess.get('error') %}
+      <p class="text-xs text-red-400">{{ sess.error }}</p>
+    {% elif sess and not sess.get('error') %}
+      {% if sess.sessions %}
+        <div class="space-y-3">
+          {% for s in sess.sessions %}
+          <div class="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-900/40">
+            {# User initial circle #}
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style="background-color: #E5A00D">
+              {{ s.user_initial }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <div class="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">{{ s.title }}</div>
+                  {% if s.subtitle %}
+                  <div class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ s.subtitle }}</div>
+                  {% endif %}
+                </div>
+                {% set state_colors = {
+                  'playing': 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
+                  'paused': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
+                  'buffering': 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+                } %}
+                {% set sc = state_colors.get(s.state, 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300') %}
+                <span class="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium {{ sc }}">
+                  {{ s.state | capitalize }}
+                </span>
+              </div>
+              {# Progress bar #}
+              <div class="mt-2">
+                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                  <div class="h-1.5 rounded-full transition-all" style="width: {{ s.progress }}%; background-color: #E5A00D"></div>
+                </div>
+                <div class="flex justify-between text-[10px] text-gray-400 mt-0.5">
+                  <span>{{ s.progress }}%</span>
+                  <span>{{ s.remaining }} left</span>
+                </div>
+              </div>
+              {# Device + quality #}
+              <div class="flex items-center gap-2 mt-1 text-[10px] text-gray-400">
+                <span>{{ s.user }}</span>
+                <span>&middot;</span>
+                <span>{{ s.device }}</span>
+                {% if s.quality and s.quality != '?' %}
+                <span>&middot;</span>
+                <span>{{ s.quality }}</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-center py-4">
+          <svg class="w-8 h-8 mx-auto text-gray-300 dark:text-gray-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <p class="text-xs text-gray-400">Nothing playing right now</p>
+        </div>
+      {% endif %}
+    {% else %}
+      <p class="text-xs text-gray-400">Loading...</p>
+    {% endif %}
+  </div>
+</div>

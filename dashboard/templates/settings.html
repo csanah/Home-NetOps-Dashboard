@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h2 class="text-2xl font-bold">Settings</h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Configure system connections, credentials, and dashboard options.</p>
+    </div>
+    <div class="flex gap-1 bg-gray-200 dark:bg-gray-700 rounded-lg p-1">
+      <button type="button" class="settings-tab-btn flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors w-full sm:w-auto justify-center" data-tab="general" onclick="switchSettingsTab('general')">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        General
+      </button>
+      <button type="button" class="settings-tab-btn flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors w-full sm:w-auto justify-center" data-tab="systems" onclick="switchSettingsTab('systems')">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/></svg>
+        Systems
+      </button>
+      <button type="button" class="settings-tab-btn flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors w-full sm:w-auto justify-center" data-tab="services" onclick="switchSettingsTab('services')">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        Media
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+  :root {
+    --bar-color-dashboard: #3b82f6;
+    --bar-color-udm: #6366f1;
+    --bar-color-proxmox: #f97316;
+    --bar-color-ha: #06b6d4;
+    --bar-color-nas: #22c55e;
+    --bar-color-bike: #ec4899;
+    --bar-color-media: #a855f7;
+    --bar-color-plex: #E5A00D;
+    --bar-color-overseerr: #7c3aed;
+    --bar-color-media_services: #f59e0b;
+    --bar-color-claude_chat: #8b5cf6;
+    --bar-color-layout: #14b8a6;
+  }
+</style>
+
+<div class="space-y-6">
+{% for section_id, section in settings.items() %}
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden" id="section-{{ section_id }}">
+    <!-- Color top bar -->
+    <div class="h-1" style="background-color: var(--bar-color-{{ section_id }})"></div>
+    <div class="p-5">
+      <h3 class="text-lg font-semibold mb-4">{{ section.title }}</h3>
+
+      <form onsubmit="return false;" id="form-{{ section_id }}">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {% for field in section.fields %}
+          {% if field.type == 'checkbox' %}
+          <div class="flex items-center gap-3 md:col-span-2">
+            <button type="button" data-name="{{ field.key }}" data-checked="{{ field.value }}"
+                    onclick="toggleCheckbox(this)"
+                    class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800
+                    {% if field.value == 'true' %}bg-blue-600{% else %}bg-gray-300 dark:bg-gray-600{% endif %}">
+              <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform
+                    {% if field.value == 'true' %}translate-x-6{% else %}translate-x-1{% endif %}"></span>
+            </button>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ field.label }}</label>
+          </div>
+          {% else %}
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="field-{{ field.key }}">
+              {{ field.label }}
+              {% if field.restart is defined and field.restart %}<span class="text-xs text-amber-500 ml-1">(restart required)</span>{% endif %}
+            </label>
+            <div class="relative">
+              <input
+                id="field-{{ field.key }}"
+                name="{{ field.key }}"
+                type="{{ 'password' if field.type == 'password' else field.type }}"
+                value="{{ field.value }}"
+                class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors {% if field.type == 'password' %}pr-10{% endif %}"
+                {% if field.type == 'number' %}inputmode="numeric"{% endif %}
+              >
+              {% if field.type == 'password' %}
+              <button type="button" onclick="togglePassword(this)" class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" aria-label="Show password">
+                <svg class="w-4 h-4 eye-show" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                <svg class="w-4 h-4 eye-hide hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+              </button>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+          {% endfor %}
+        </div>
+
+        <!-- Footer: test buttons + save -->
+        <div class="mt-5 flex flex-wrap items-center gap-3">
+          {% for test in section.tests %}
+          <button type="button" onclick="testConnection('{{ section_id }}', '{{ test }}', this)"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            Test {{ test | upper }}
+          </button>
+          {% endfor %}
+
+          {% if section.auto_detect %}
+          <button type="button" onclick="autoDetectKeys(this, '{{ section_id }}')"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-800/40 transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            Auto-detect {{ 'Token' if section_id == 'plex' else ('API Key' if section_id == 'overseerr' else 'API Keys') }}
+          </button>
+          {% endif %}
+
+          <div class="flex-1"></div>
+
+          <span id="status-{{ section_id }}" class="text-sm"></span>
+
+          <button type="button" onclick="saveSection('{{ section_id }}')"
+                  class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endfor %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleCheckbox(btn) {
+  const checked = btn.getAttribute('data-checked') === 'true';
+  const newVal = !checked;
+  btn.setAttribute('data-checked', newVal ? 'true' : 'false');
+  const knob = btn.querySelector('span');
+  if (newVal) {
+    btn.classList.remove('bg-gray-300', 'dark:bg-gray-600');
+    btn.classList.add('bg-blue-600');
+    knob.classList.remove('translate-x-1');
+    knob.classList.add('translate-x-6');
+  } else {
+    btn.classList.remove('bg-blue-600');
+    btn.classList.add('bg-gray-300', 'dark:bg-gray-600');
+    knob.classList.remove('translate-x-6');
+    knob.classList.add('translate-x-1');
+  }
+}
+
+function saveSection(section) {
+  const form = document.getElementById('form-' + section);
+  const status = document.getElementById('status-' + section);
+  const data = {};
+  form.querySelectorAll('input[name]').forEach(input => {
+    data[input.name] = input.value;
+  });
+  // Collect checkbox toggle values
+  form.querySelectorAll('[data-name][data-checked]').forEach(btn => {
+    data[btn.getAttribute('data-name')] = btn.getAttribute('data-checked');
+  });
+
+  status.textContent = 'Saving...';
+  status.className = 'text-sm text-gray-500';
+
+  fetch('/settings/save/' + section, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  })
+  .then(r => r.json())
+  .then(result => {
+    if (result.success) {
+      if (result.restart_required) {
+        showToast('Saved! Restart required for port change.', 'warning');
+      } else {
+        showToast('Settings saved.', 'success');
+      }
+    } else {
+      showToast(result.error || 'Save failed', 'error');
+    }
+  })
+  .catch(err => {
+    showToast('Error: ' + err.message, 'error');
+  });
+}
+
+function testConnection(section, testType, btn) {
+  const status = document.getElementById('status-' + section);
+  const origText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Testing...';
+
+  // Build the system key: for sections with multiple tests, combine section_test
+  // For single-test sections, the test type maps directly
+  let system = '';
+  if (testType === 'api' || testType === 'ssh') {
+    system = section + '_' + testType;
+  } else {
+    system = testType; // sabnzbd, sonarr, prowlarr, claude_chat
+  }
+
+  fetch('/settings/test/' + system, { method: 'POST' })
+  .then(r => r.json())
+  .then(result => {
+    btn.disabled = false;
+    btn.textContent = origText;
+    showToast(result.message, result.success ? 'success' : 'error');
+  })
+  .catch(err => {
+    btn.disabled = false;
+    btn.textContent = origText;
+    showToast('Error: ' + err.message, 'error');
+  });
+}
+
+function autoDetectKeys(btn, sectionId) {
+  sectionId = sectionId || 'media_services';
+  const status = document.getElementById('status-' + sectionId);
+  const origText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Detecting...';
+
+  const url = sectionId === 'plex' ? '/plex/auto-detect' : sectionId === 'overseerr' ? '/overseerr/auto-detect' : '/settings/auto-detect-keys';
+
+  fetch(url, { method: 'POST' })
+  .then(r => r.json())
+  .then(result => {
+    btn.disabled = false;
+    btn.textContent = origText;
+    if (sectionId === 'plex' || sectionId === 'overseerr') {
+      if (result.success) {
+        showToast(result.message || (sectionId === 'plex' ? 'Token detected and saved!' : 'API key detected and saved!'), 'success');
+        setTimeout(() => { location.reload(); }, 1500);
+      } else {
+        showToast(result.error || 'Detection failed', 'warning');
+      }
+    } else {
+      if (result.keys) {
+        if (result.keys.sabnzbd) {
+          const el = document.getElementById('field-SABNZBD_API_KEY');
+          if (el) el.value = result.keys.sabnzbd;
+        }
+        if (result.keys.sonarr) {
+          const el = document.getElementById('field-SONARR_API_KEY');
+          if (el) el.value = result.keys.sonarr;
+        }
+        if (result.keys.prowlarr) {
+          const el = document.getElementById('field-PROWLARR_API_KEY');
+          if (el) el.value = result.keys.prowlarr;
+        }
+        if (result.keys.radarr) {
+          const el = document.getElementById('field-RADARR_API_KEY');
+          if (el) el.value = result.keys.radarr;
+        }
+      }
+      if (result.success) {
+        showToast('Keys detected and saved!', 'success');
+      } else {
+        const errMsg = (result.errors || []).join('; ') || result.error || 'Detection failed';
+        showToast(errMsg, 'warning');
+      }
+    }
+  })
+  .catch(err => {
+    btn.disabled = false;
+    btn.textContent = origText;
+    showToast('Error: ' + err.message, 'error');
+  });
+}
+
+function togglePassword(btn) {
+  const input = btn.parentElement.querySelector('input');
+  const showIcon = btn.querySelector('.eye-show');
+  const hideIcon = btn.querySelector('.eye-hide');
+  if (input.type === 'password') {
+    input.type = 'text';
+    showIcon.classList.add('hidden');
+    hideIcon.classList.remove('hidden');
+  } else {
+    input.type = 'password';
+    showIcon.classList.remove('hidden');
+    hideIcon.classList.add('hidden');
+  }
+}
+
+// ── Settings tab navigation ──
+const TAB_SECTIONS = {
+  general:  ['layout', 'claude_chat', 'dashboard'],
+  systems:  ['udm', 'proxmox', 'ha', 'nas', 'bike', 'media'],
+  services: ['plex', 'overseerr', 'media_services'],
+};
+
+function switchSettingsTab(tab) {
+  // Toggle button styles
+  document.querySelectorAll('.settings-tab-btn').forEach(btn => {
+    const isActive = btn.dataset.tab === tab;
+    btn.classList.toggle('bg-white', isActive);
+    btn.classList.toggle('dark:bg-gray-600', isActive);
+    btn.classList.toggle('text-gray-900', isActive);
+    btn.classList.toggle('dark:text-white', isActive);
+    btn.classList.toggle('shadow-sm', isActive);
+    btn.classList.toggle('text-gray-600', !isActive);
+    btn.classList.toggle('dark:text-gray-300', !isActive);
+  });
+  // Show/hide section cards
+  const active = TAB_SECTIONS[tab] || [];
+  Object.values(TAB_SECTIONS).flat().forEach(id => {
+    const el = document.getElementById('section-' + id);
+    if (el) el.classList.toggle('hidden', !active.includes(id));
+  });
+  history.replaceState(null, '', '#' + tab);
+}
+
+// Init from URL hash
+const hash = location.hash.replace('#', '');
+switchSettingsTab(Object.keys(TAB_SECTIONS).includes(hash) ? hash : 'general');
+</script>
+{% endblock %}
