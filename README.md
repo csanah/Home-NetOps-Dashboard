@@ -2,6 +2,8 @@
 
 A self-hosted network operations dashboard for monitoring and managing home lab infrastructure. Built with Flask, HTMX, and Tailwind CSS.
 
+![NetOps Dashboard](Home-NetOps-Dashboard.png)
+
 ## Features
 
 - **Real-time system monitoring** — CPU, RAM, disk, and network stats for all systems
