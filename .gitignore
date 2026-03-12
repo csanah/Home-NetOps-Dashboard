@@ -1,0 +1,48 @@
+# ── Credentials & Secrets ──
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+credentials.json
+secrets.yaml
+
+# ── Logs ──
+*.log
+logs/
+dashboard/logs/
+
+# ── Python ──
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+
+# ── Node.js ──
+node_modules/
+
+# ── Windows ──
+Thumbs.db
+Desktop.ini
+*.lnk
+
+# ── macOS ──
+.DS_Store
+
+# ── IDE ──
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Windows Service wrapper (legacy) ──
+dashboard/SystemControlDashboard.exe
+dashboard/SystemControlDashboard.xml
+dashboard/SystemControlDashboard.*.log
+
+# ── Test artifacts ──
+dashboard/test_icon_*.png

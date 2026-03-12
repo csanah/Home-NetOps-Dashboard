@@ -1,0 +1,47 @@
+{% set s = health.get('proxmox', {}) %}
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden h-full">
+  <div class="h-1 {{ 'bg-green-500' if s.online else 'bg-red-500' }}"></div>
+  <div class="p-4">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="font-semibold text-sm">{{ s.name or names.proxmox }}</h3>
+      <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' if s.online else 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' }}">
+        {{ 'Online' if s.online else 'Offline' }}
+      </span>
+    </div>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">{{ s.host }}</p>
+    {% if s.online %}
+    <div class="grid grid-cols-2 gap-2 text-xs mb-3">
+      <div><span class="text-gray-500 dark:text-gray-400">Host CPU</span><br><span class="font-medium">{{ s.cpu }}</span></div>
+      <div><span class="text-gray-500 dark:text-gray-400">Host RAM</span><br><span class="font-medium">{{ s.ram }}{% if s.ram_detail %} ({{ s.ram_detail }}){% endif %}</span></div>
+    </div>
+    {% if s.vms %}
+    <div class="space-y-1">
+      {% for vm in s.vms %}
+      <div class="flex items-center justify-between text-xs px-2 py-1 rounded {{ 'bg-green-50 dark:bg-green-900/20' if vm.status == 'running' else 'bg-gray-100 dark:bg-gray-700' }}">
+        <span class="flex items-center gap-1 min-w-0">
+          <span class="text-gray-400">{{ vm.id }}</span>
+          <span class="truncate">{{ vm.name }}</span>
+          <span class="text-gray-400">({{ vm.type }})</span>
+        </span>
+        <span class="flex items-center gap-2 shrink-0 ml-2">
+          {% if vm.status == 'running' and vm.cpu_pct is not none %}
+          <span class="text-gray-500 dark:text-gray-400">CPU {{ vm.cpu_pct }}%</span>
+          <span class="text-gray-400">·</span>
+          <span class="text-gray-500 dark:text-gray-400">RAM {{ '%.1f' | format(vm.mem_used / 1073741824) }}/{{ '%.1f' | format(vm.mem_max / 1073741824) }}G</span>
+          {% elif vm.status != 'running' %}
+          <span class="text-gray-400">—</span>
+          {% endif %}
+          <span class="px-1.5 py-0.5 rounded text-[10px] font-medium {{ 'bg-green-200 text-green-800 dark:bg-green-800 dark:text-green-200' if vm.status == 'running' else 'bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-300' }}">
+            {{ vm.status }}
+          </span>
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% else %}
+    <p class="text-xs text-red-500">Unreachable</p>
+    {% endif %}
+  </div>
+  {% set key = 'proxmox' %}{% include "partials/sparkline.html" %}
+</div>

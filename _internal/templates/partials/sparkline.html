@@ -1,0 +1,13 @@
+{% if show_sparklines %}
+{% set bars = history.get(key, []) %}
+{% if bars | length > 0 %}
+<div class="px-4 pb-3 pt-1">
+  <div class="flex items-end gap-px h-4" title="Last {{ bars | length }} checks">
+    {% for online in bars %}
+    <div class="flex-1 rounded-sm {{ 'bg-green-400' if online else 'bg-red-400' }}" style="min-width:3px;height:100%"></div>
+    {% endfor %}
+  </div>
+  <p class="text-[10px] text-gray-400 mt-0.5">Uptime: last {{ bars | length }} checks</p>
+</div>
+{% endif %}
+{% endif %}

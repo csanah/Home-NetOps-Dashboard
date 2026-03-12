@@ -1,0 +1,215 @@
+{% set stats = data.stats %}
+{% set pending = data.pending %}
+{% set recent = data.recent %}
+{% set trending = data.trending %}
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+  {# ── Request Stats ── #}
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="h-1" style="background-color: {{ '#7c3aed' if stats and not stats.get('error') else '#d1d5db' }}"></div>
+    <div class="p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold text-sm flex items-center gap-2">
+          <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          Request Stats
+        </h3>
+        {% if stats and not stats.get('error') %}
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">
+          {{ stats.total }} total
+        </span>
+        {% endif %}
+      </div>
+
+      {% if not data.has_key %}
+        <p class="text-xs text-gray-400">Configure Overseerr API key in Settings</p>
+      {% elif stats and stats.get('error') %}
+        <p class="text-xs text-red-400">{{ stats.error }}</p>
+      {% elif stats and not stats.get('error') %}
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="text-center p-2 rounded-lg bg-amber-50 dark:bg-amber-900/20">
+            <div class="text-lg font-bold text-amber-600 dark:text-amber-400">{{ stats.pending }}</div>
+            <div class="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider">Pending</div>
+          </div>
+          <div class="text-center p-2 rounded-lg bg-green-50 dark:bg-green-900/20">
+            <div class="text-lg font-bold text-green-600 dark:text-green-400">{{ stats.approved }}</div>
+            <div class="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider">Approved</div>
+          </div>
+          <div class="text-center p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+            <div class="text-lg font-bold text-blue-600 dark:text-blue-400">{{ stats.available }}</div>
+            <div class="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider">Available</div>
+          </div>
+          <div class="text-center p-2 rounded-lg bg-red-50 dark:bg-red-900/20">
+            <div class="text-lg font-bold text-red-600 dark:text-red-400">{{ stats.declined }}</div>
+            <div class="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider">Declined</div>
+          </div>
+        </div>
+      {% else %}
+        <p class="text-xs text-gray-400">Loading...</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Trending / Popular ── #}
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="h-1" style="background-color: {{ '#7c3aed' if trending and not trending.get('error') else '#d1d5db' }}"></div>
+    <div class="p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold text-sm flex items-center gap-2">
+          <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+          Trending
+        </h3>
+      </div>
+
+      {% if not data.has_key %}
+        <p class="text-xs text-gray-400">Configure Overseerr API key in Settings</p>
+      {% elif trending and trending.get('error') %}
+        <p class="text-xs text-red-400">{{ trending.error }}</p>
+      {% elif trending and not trending.get('error') %}
+        {% if trending['items'] %}
+          <div class="space-y-1 max-h-72 overflow-y-auto">
+            {% for item in trending['items'] %}
+            <div class="flex items-center gap-2 py-1.5 border-b border-gray-100 dark:border-gray-700/50 last:border-0">
+              {% if item.media_type == 'movie' %}
+                <svg class="w-3.5 h-3.5 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/></svg>
+              {% else %}
+                <svg class="w-3.5 h-3.5 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              {% endif %}
+              <div class="flex-1 min-w-0">
+                <div class="text-xs text-gray-700 dark:text-gray-200 truncate">{{ item.title }}</div>
+              </div>
+              {% if item.year %}
+              <span class="shrink-0 text-[10px] text-gray-400">{{ item.year }}</span>
+              {% endif %}
+              <span class="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium
+                {% if item.media_type == 'movie' %}bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300
+                {% else %}bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300{% endif %}">
+                {{ item.media_type | upper }}
+              </span>
+              {% if item.status %}
+              <span class="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium
+                {% if item.status == 'available' %}bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300
+                {% elif item.status == 'pending' %}bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300
+                {% elif item.status == 'processing' %}bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300
+                {% else %}bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300{% endif %}">
+                {{ item.status }}
+              </span>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-xs text-gray-400">No trending media</p>
+        {% endif %}
+      {% else %}
+        <p class="text-xs text-gray-400">Loading...</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Pending Requests ── #}
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="h-1" style="background-color: {{ '#7c3aed' if pending and not pending.get('error') else '#d1d5db' }}"></div>
+    <div class="p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold text-sm flex items-center gap-2">
+          <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Pending Requests
+        </h3>
+        {% if pending and not pending.get('error') %}
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+          {{ pending['items'] | length }} pending
+        </span>
+        {% endif %}
+      </div>
+
+      {% if not data.has_key %}
+        <p class="text-xs text-gray-400">Configure Overseerr API key in Settings</p>
+      {% elif pending and pending.get('error') %}
+        <p class="text-xs text-red-400">{{ pending.error }}</p>
+      {% elif pending and not pending.get('error') %}
+        {% if pending['items'] %}
+          <div class="space-y-1 max-h-72 overflow-y-auto">
+            {% for item in pending['items'] %}
+            <div class="flex items-center gap-2 py-1.5 border-b border-gray-100 dark:border-gray-700/50 last:border-0">
+              {% if item.media_type == 'movie' %}
+                <svg class="w-3.5 h-3.5 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/></svg>
+              {% else %}
+                <svg class="w-3.5 h-3.5 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              {% endif %}
+              <div class="flex-1 min-w-0">
+                <div class="text-xs text-gray-700 dark:text-gray-200 truncate">{{ item.title }}</div>
+                <div class="text-[10px] text-gray-400">{{ item.requester }} &middot; {{ item.requested_at }}</div>
+              </div>
+              <span class="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium
+                {% if item.media_type == 'movie' %}bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300
+                {% else %}bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300{% endif %}">
+                {{ item.media_type | upper }}
+              </span>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-xs text-gray-400">No pending requests</p>
+        {% endif %}
+      {% else %}
+        <p class="text-xs text-gray-400">Loading...</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Recent Requests ── #}
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="h-1" style="background-color: {{ '#7c3aed' if recent and not recent.get('error') else '#d1d5db' }}"></div>
+    <div class="p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold text-sm flex items-center gap-2">
+          <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+          Recent Requests
+        </h3>
+        {% if recent and not recent.get('error') %}
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">
+          {{ recent['items'] | length }} recent
+        </span>
+        {% endif %}
+      </div>
+
+      {% if not data.has_key %}
+        <p class="text-xs text-gray-400">Configure Overseerr API key in Settings</p>
+      {% elif recent and recent.get('error') %}
+        <p class="text-xs text-red-400">{{ recent.error }}</p>
+      {% elif recent and not recent.get('error') %}
+        {% if recent['items'] %}
+          <div class="space-y-1 max-h-72 overflow-y-auto">
+            {% for item in recent['items'] %}
+            <div class="flex items-center gap-2 py-1.5 border-b border-gray-100 dark:border-gray-700/50 last:border-0">
+              {% if item.media_type == 'movie' %}
+                <svg class="w-3.5 h-3.5 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/></svg>
+              {% else %}
+                <svg class="w-3.5 h-3.5 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              {% endif %}
+              <div class="flex-1 min-w-0">
+                <div class="text-xs text-gray-700 dark:text-gray-200 truncate">{{ item.title }}</div>
+                <div class="text-[10px] text-gray-400">{{ item.requester }} &middot; {{ item.requested_at }}</div>
+              </div>
+              <span class="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium
+                {% if item.status == 'available' %}bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300
+                {% elif item.status == 'approved' %}bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300
+                {% elif item.status == 'declined' %}bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300
+                {% elif item.status == 'pending' %}bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300
+                {% else %}bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300{% endif %}">
+                {{ item.status }}
+              </span>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-xs text-gray-400">No recent requests</p>
+        {% endif %}
+      {% else %}
+        <p class="text-xs text-gray-400">Loading...</p>
+      {% endif %}
+    </div>
+  </div>
+
+</div>

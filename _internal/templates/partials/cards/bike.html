@@ -1,0 +1,24 @@
+{% set s = health.get('bike', {}) %}
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden h-full">
+  <div class="h-1 {{ 'bg-green-500' if s.online else 'bg-red-500' }}"></div>
+  <div class="p-4">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="font-semibold text-sm">{{ s.name or names.bike }}</h3>
+      <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' if s.online else 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' }}">
+        {{ 'Online' if s.online else 'Offline' }}
+      </span>
+    </div>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">{{ s.host }}</p>
+    {% if s.online %}
+    <div class="grid grid-cols-2 gap-2 text-xs">
+      <div><span class="text-gray-500 dark:text-gray-400">SSH</span><br><span class="font-medium text-green-600">Online</span></div>
+      <div><span class="text-gray-500 dark:text-gray-400">HASS.Agent</span><br>
+        <span class="font-medium {{ 'text-green-600' if s.hass_agent else 'text-yellow-500' }}">{{ 'Connected' if s.hass_agent else 'Disconnected' }}</span>
+      </div>
+    </div>
+    {% else %}
+    <p class="text-xs text-red-500">Offline (SSH unreachable)</p>
+    {% endif %}
+  </div>
+  {% set key = 'bike' %}{% include "partials/sparkline.html" %}
+</div>

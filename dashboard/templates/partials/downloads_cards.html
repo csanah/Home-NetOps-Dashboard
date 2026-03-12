@@ -1,0 +1,327 @@
+{% set sq = data.sabnzbd_queue %}
+{% set sh = data.sabnzbd_history %}
+{% set soq = data.sonarr_queue %}
+{% set cal = data.sonarr_calendar %}
+{% set rq = data.radarr_queue %}
+{% set rcal = data.radarr_calendar %}
+{% set need_setup = not data.has_sabnzbd_key or not data.has_sonarr_key or not data.has_radarr_key %}
+
+{% if need_setup %}<span data-needs-setup class="hidden"></span>{% endif %}
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+  {# ── SABnzbd Active Downloads ── #}
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="h-1 {{ 'bg-blue-500' if sq and not sq.get('error') else 'bg-gray-300 dark:bg-gray-600' }}"></div>
+    <div class="p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold text-sm flex items-center gap-2">
+          <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          SABnzbd Queue
+        </h3>
+        {% if sq and not sq.get('error') %}
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300' if sq.paused else 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' }}">
+          {{ 'Paused' if sq.paused else sq.speed }}
+        </span>
+        {% endif %}
+      </div>
+
+      {% if not data.has_sabnzbd_key %}
+        <p class="text-xs text-gray-400">API key not configured — use Auto-detect above</p>
+      {% elif sq and sq.get('error') and sq.error != 'no_key' %}
+        <p class="text-xs text-red-400">Service unreachable</p>
+      {% elif sq and not sq.get('error') %}
+        {% if sq.slots %}
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+            {{ sq.slots | length }} item{{ 's' if sq.slots | length != 1 }} &middot; {{ sq.size_left }} left &middot; ETA {{ sq.time_left }}
+          </div>
+          <div class="space-y-2 max-h-64 overflow-y-auto">
+            {% for slot in sq.slots %}
+            <div>
+              <div class="flex justify-between text-xs mb-0.5">
+                <span class="truncate mr-2 text-gray-700 dark:text-gray-200">{{ slot.filename }}</span>
+                <span class="shrink-0 text-gray-500 dark:text-gray-400">{{ slot.percentage }}%</span>
+              </div>
+              <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                <div class="bg-blue-500 h-1.5 rounded-full transition-all" style="width: {{ slot.percentage }}%"></div>
+              </div>
+              <div class="flex justify-between text-[10px] text-gray-400 mt-0.5">
+                <span>{{ slot.size_left }} left</span>
+                <span>{{ slot.eta }}</span>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-xs text-gray-400">Queue empty</p>
+        {% endif %}
+      {% else %}
+        <p class="text-xs text-gray-400">Loading...</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Sonarr Queue / Activity ── #}
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="h-1 {{ 'bg-purple-500' if soq and not soq.get('error') else 'bg-gray-300 dark:bg-gray-600' }}"></div>
+    <div class="p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold text-sm flex items-center gap-2">
+          <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/></svg>
+          Sonarr Activity
+        </h3>
+        {% if soq and not soq.get('error') %}
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">
+          {{ soq.total }} item{{ 's' if soq.total != 1 }}
+        </span>
+        {% endif %}
+      </div>
+
+      {% if not data.has_sonarr_key %}
+        <p class="text-xs text-gray-400">API key not configured — use Auto-detect above</p>
+      {% elif soq and soq.get('error') and soq.error != 'no_key' %}
+        <p class="text-xs text-red-400">Service unreachable</p>
+      {% elif soq and not soq.get('error') %}
+        {% if soq['items'] %}
+          <div class="space-y-2 max-h-64 overflow-y-auto">
+            {% for item in soq['items'] %}
+            <div class="flex items-start gap-2 p-2 rounded-lg bg-gray-50 dark:bg-gray-750 dark:bg-gray-900/40">
+              <div class="flex-1 min-w-0">
+                <div class="text-xs font-medium text-gray-700 dark:text-gray-200 truncate">{{ item.series }}</div>
+                <div class="text-[10px] text-gray-500 dark:text-gray-400">
+                  S{{ '%02d' | format(item.season) }}E{{ '%02d' | format(item.episode) }} — {{ item.episode_title }}
+                </div>
+              </div>
+              {% set status_colors = {
+                'downloading': 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+                'imported': 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
+                'failed': 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+                'warning': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
+              } %}
+              {% set sc = status_colors.get(item.tracked_state, 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300') %}
+              <span class="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium {{ sc }}">
+                {{ item.tracked_state or item.status }}
+              </span>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-xs text-gray-400">No active downloads</p>
+        {% endif %}
+      {% else %}
+        <p class="text-xs text-gray-400">Loading...</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Radarr Queue / Activity ── #}
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="h-1 {{ 'bg-rose-500' if rq and not rq.get('error') else 'bg-gray-300 dark:bg-gray-600' }}"></div>
+    <div class="p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold text-sm flex items-center gap-2">
+          <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/></svg>
+          Radarr Activity
+        </h3>
+        {% if rq and not rq.get('error') %}
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300">
+          {{ rq.total }} item{{ 's' if rq.total != 1 }}
+        </span>
+        {% endif %}
+      </div>
+
+      {% if not data.has_radarr_key %}
+        <p class="text-xs text-gray-400">API key not configured — use Auto-detect above</p>
+      {% elif rq and rq.get('error') and rq.error != 'no_key' %}
+        <p class="text-xs text-red-400">Service unreachable</p>
+      {% elif rq and not rq.get('error') %}
+        {% if rq['items'] %}
+          <div class="space-y-2 max-h-64 overflow-y-auto">
+            {% for item in rq['items'] %}
+            <div class="flex items-start gap-2 p-2 rounded-lg bg-gray-50 dark:bg-gray-750 dark:bg-gray-900/40">
+              <div class="flex-1 min-w-0">
+                <div class="text-xs font-medium text-gray-700 dark:text-gray-200 truncate">{{ item.title }} ({{ item.year }})</div>
+              </div>
+              {% set status_colors = {
+                'downloading': 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+                'imported': 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
+                'failed': 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+                'warning': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
+              } %}
+              {% set sc = status_colors.get(item.tracked_state, 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300') %}
+              <span class="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium {{ sc }}">
+                {{ item.tracked_state or item.status }}
+              </span>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-xs text-gray-400">No active downloads</p>
+        {% endif %}
+      {% else %}
+        <p class="text-xs text-gray-400">Loading...</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Upcoming Episodes (Sonarr Calendar) ── #}
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="h-1 {{ 'bg-teal-500' if cal and not cal.get('error') else 'bg-gray-300 dark:bg-gray-600' }}"></div>
+    <div class="p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold text-sm flex items-center gap-2">
+          <svg class="w-4 h-4 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          Upcoming Episodes
+        </h3>
+        {% if cal and not cal.get('error') %}
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300">
+          {{ cal.episodes | length }} upcoming
+        </span>
+        {% endif %}
+      </div>
+
+      {% if not data.has_sonarr_key %}
+        <p class="text-xs text-gray-400">API key not configured — use Auto-detect above</p>
+      {% elif cal and cal.get('error') and cal.error != 'no_key' %}
+        <p class="text-xs text-red-400">Service unreachable</p>
+      {% elif cal and not cal.get('error') %}
+        {% if cal.episodes %}
+          {% set ns = namespace(current_date='') %}
+          <div class="space-y-1 max-h-72 overflow-y-auto">
+            {% for ep in cal.episodes %}
+              {% set air = ep.air_date[:10] if ep.air_date else 'Unknown' %}
+              {% if air != ns.current_date %}
+                {% set ns.current_date = air %}
+                <div class="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mt-2 first:mt-0">{{ air }}</div>
+              {% endif %}
+              <div class="flex items-center gap-2 py-1 text-xs">
+                {% if ep.has_file %}
+                  <svg class="w-3 h-3 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                {% elif ep.monitored %}
+                  <svg class="w-3 h-3 text-teal-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4"/></svg>
+                {% else %}
+                  <svg class="w-3 h-3 text-gray-300 dark:text-gray-600 shrink-0" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4"/></svg>
+                {% endif %}
+                <span class="text-gray-700 dark:text-gray-200 truncate flex-1">{{ ep.series }}</span>
+                <span class="text-gray-400 dark:text-gray-500 shrink-0">S{{ '%02d' | format(ep.season) }}E{{ '%02d' | format(ep.episode) }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-xs text-gray-400">Nothing upcoming in the next 14 days</p>
+        {% endif %}
+      {% else %}
+        <p class="text-xs text-gray-400">Loading...</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Upcoming Movies (Radarr Calendar) ── #}
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="h-1 {{ 'bg-indigo-500' if rcal and not rcal.get('error') else 'bg-gray-300 dark:bg-gray-600' }}"></div>
+    <div class="p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold text-sm flex items-center gap-2">
+          <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          Upcoming Movies
+        </h3>
+        {% if rcal and not rcal.get('error') %}
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+          {{ rcal.movies | length }} upcoming
+        </span>
+        {% endif %}
+      </div>
+
+      {% if not data.has_radarr_key %}
+        <p class="text-xs text-gray-400">API key not configured — use Auto-detect above</p>
+      {% elif rcal and rcal.get('error') and rcal.error != 'no_key' %}
+        <p class="text-xs text-red-400">Service unreachable</p>
+      {% elif rcal and not rcal.get('error') %}
+        {% if rcal.movies %}
+          {% set ns = namespace(current_date='') %}
+          <div class="space-y-1 max-h-72 overflow-y-auto">
+            {% for m in rcal.movies %}
+              {% set rel = m.release_date[:10] if m.release_date else 'Unknown' %}
+              {% if rel != ns.current_date %}
+                {% set ns.current_date = rel %}
+                <div class="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mt-2 first:mt-0">{{ rel }}</div>
+              {% endif %}
+              <div class="flex items-center gap-2 py-1 text-xs">
+                {% if m.has_file %}
+                  <svg class="w-3 h-3 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                {% elif m.monitored %}
+                  <svg class="w-3 h-3 text-indigo-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4"/></svg>
+                {% else %}
+                  <svg class="w-3 h-3 text-gray-300 dark:text-gray-600 shrink-0" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4"/></svg>
+                {% endif %}
+                <span class="text-gray-700 dark:text-gray-200 truncate flex-1">{{ m.title }}</span>
+                <span class="text-gray-400 dark:text-gray-500 shrink-0">{{ m.year }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-xs text-gray-400">Nothing upcoming in the next 14 days</p>
+        {% endif %}
+      {% else %}
+        <p class="text-xs text-gray-400">Loading...</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Download History (SABnzbd) ── #}
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="h-1 {{ 'bg-amber-500' if sh and not sh.get('error') else 'bg-gray-300 dark:bg-gray-600' }}"></div>
+    <div class="p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold text-sm flex items-center gap-2">
+          <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Download History
+        </h3>
+        {% if sh and not sh.get('error') %}
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+          {{ sh.total_size }}
+        </span>
+        {% endif %}
+      </div>
+
+      {% if not data.has_sabnzbd_key %}
+        <p class="text-xs text-gray-400">API key not configured — use Auto-detect above</p>
+      {% elif sh and sh.get('error') and sh.error != 'no_key' %}
+        <p class="text-xs text-red-400">Service unreachable</p>
+      {% elif sh and not sh.get('error') %}
+        {% if sh.slots %}
+          <div class="space-y-1 max-h-72 overflow-y-auto">
+            {% for slot in sh.slots %}
+            <div class="flex items-center gap-2 py-1.5 border-b border-gray-100 dark:border-gray-700/50 last:border-0">
+              {% if slot.status == 'Completed' %}
+                <svg class="w-3.5 h-3.5 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+              {% elif slot.status == 'Failed' %}
+                <svg class="w-3.5 h-3.5 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              {% else %}
+                <svg class="w-3.5 h-3.5 text-gray-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4"/></svg>
+              {% endif %}
+              <div class="flex-1 min-w-0">
+                <div class="text-xs text-gray-700 dark:text-gray-200 truncate">{{ slot.name }}</div>
+                <div class="text-[10px] text-gray-400">
+                  {{ slot.size }}
+                  {% if slot.category %}&middot; {{ slot.category }}{% endif %}
+                  {% if slot.completed %}
+                    &middot; {{ slot.completed | int | abs }}
+                  {% endif %}
+                </div>
+              </div>
+              {% set status_cls = 'text-green-600 dark:text-green-400' if slot.status == 'Completed' else ('text-red-600 dark:text-red-400' if slot.status == 'Failed' else 'text-gray-500') %}
+              <span class="text-[10px] font-medium {{ status_cls }} shrink-0">{{ slot.status }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-xs text-gray-400">No history</p>
+        {% endif %}
+      {% else %}
+        <p class="text-xs text-gray-400">Loading...</p>
+      {% endif %}
+    </div>
+  </div>
+
+</div>

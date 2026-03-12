@@ -1,0 +1,45 @@
+{# WAN Bandwidth + Top Clients Strip #}
+{% set udm = health.get('udm', {}) %}
+{% if udm.get('online') %}
+<div class="mb-4 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+  <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+    {# WAN rates #}
+    <div class="flex items-center gap-6">
+      <div>
+        <span class="text-xs text-gray-500 dark:text-gray-400 block">WAN Download</span>
+        <span class="text-lg font-bold text-blue-600 dark:text-blue-400">&#8595; {{ wan_down }}</span>
+      </div>
+      <div>
+        <span class="text-xs text-gray-500 dark:text-gray-400 block">WAN Upload</span>
+        <span class="text-lg font-bold text-green-600 dark:text-green-400">&#8593; {{ wan_up }}</span>
+      </div>
+    </div>
+
+    {# Top clients #}
+    {% if bandwidth %}
+    <div class="sm:ml-auto overflow-x-auto">
+      <table class="text-xs min-w-0">
+        <thead>
+          <tr class="text-gray-500 dark:text-gray-400">
+            <th class="pr-3 text-left font-medium">Top Client</th>
+            <th class="pr-3 text-left font-medium">IP</th>
+            <th class="pr-3 text-right font-medium">Down</th>
+            <th class="text-right font-medium">Up</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in bandwidth[:5] %}
+          <tr class="text-gray-700 dark:text-gray-300">
+            <td class="pr-3 truncate max-w-[120px]">{{ c.name }}</td>
+            <td class="pr-3 font-mono text-[10px]">{{ c.ip }}</td>
+            <td class="pr-3 text-right">{{ c.down_fmt }}</td>
+            <td class="text-right">{{ c.up_fmt }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}

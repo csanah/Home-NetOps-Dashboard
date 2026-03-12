@@ -1,0 +1,153 @@
+{# UDM Pro #}
+{% set s = health.get('udm', {}) %}
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+  <div class="h-1 {{ 'bg-green-500' if s.online else 'bg-red-500' }}"></div>
+  <div class="p-4">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="font-semibold text-sm">{{ s.name or 'UDM Pro' }}</h3>
+      <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' if s.online else 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' }}">
+        {{ 'Online' if s.online else 'Offline' }}
+      </span>
+    </div>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">{{ s.host }}</p>
+    {% if s.online %}
+    <div class="grid grid-cols-2 gap-2 text-xs">
+      <div><span class="text-gray-500 dark:text-gray-400">WAN IP</span><br><span class="font-medium">{{ s.wan_ip }}</span></div>
+      <div><span class="text-gray-500 dark:text-gray-400">Clients</span><br><span class="font-medium">{{ s.clients }}</span></div>
+      <div><span class="text-gray-500 dark:text-gray-400">CPU</span><br><span class="font-medium">{{ s.cpu }}</span></div>
+      <div><span class="text-gray-500 dark:text-gray-400">RAM</span><br><span class="font-medium">{{ s.mem }}</span></div>
+      <div><span class="text-gray-500 dark:text-gray-400">Uptime</span><br><span class="font-medium">{{ s.uptime }}</span></div>
+      {% if s.isp %}<div><span class="text-gray-500 dark:text-gray-400">ISP</span><br><span class="font-medium">{{ s.isp }}</span></div>{% endif %}
+    </div>
+    {% else %}
+    <p class="text-xs text-red-500">Unreachable</p>
+    {% endif %}
+  </div>
+</div>
+
+{# Proxmox #}
+{% set s = health.get('proxmox', {}) %}
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+  <div class="h-1 {{ 'bg-green-500' if s.online else 'bg-red-500' }}"></div>
+  <div class="p-4">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="font-semibold text-sm">{{ s.name or 'Proxmox' }}</h3>
+      <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' if s.online else 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' }}">
+        {{ 'Online' if s.online else 'Offline' }}
+      </span>
+    </div>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">{{ s.host }}</p>
+    {% if s.online %}
+    <div class="grid grid-cols-2 gap-2 text-xs mb-3">
+      <div><span class="text-gray-500 dark:text-gray-400">CPU</span><br><span class="font-medium">{{ s.cpu }}</span></div>
+      <div><span class="text-gray-500 dark:text-gray-400">RAM</span><br><span class="font-medium">{{ s.ram }}{% if s.ram_detail %} ({{ s.ram_detail }}){% endif %}</span></div>
+    </div>
+    {% if s.vms %}
+    <div class="space-y-1">
+      {% for vm in s.vms %}
+      <div class="flex items-center justify-between text-xs px-2 py-1 rounded {{ 'bg-green-50 dark:bg-green-900/20' if vm.status == 'running' else 'bg-gray-100 dark:bg-gray-700' }}">
+        <span>
+          <span class="text-gray-400 mr-1">{{ vm.id }}</span>
+          {{ vm.name }}
+          <span class="text-gray-400 ml-1">({{ vm.type }})</span>
+        </span>
+        <span class="px-1.5 py-0.5 rounded text-[10px] font-medium {{ 'bg-green-200 text-green-800 dark:bg-green-800 dark:text-green-200' if vm.status == 'running' else 'bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-300' }}">
+          {{ vm.status }}
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% else %}
+    <p class="text-xs text-red-500">Unreachable</p>
+    {% endif %}
+  </div>
+</div>
+
+{# Home Assistant #}
+{% set s = health.get('ha', {}) %}
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+  <div class="h-1 {{ 'bg-green-500' if s.online else 'bg-red-500' }}"></div>
+  <div class="p-4">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="font-semibold text-sm">{{ s.name or 'Home Assistant' }}</h3>
+      <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' if s.online else 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' }}">
+        {{ 'Online' if s.online else 'Offline' }}
+      </span>
+    </div>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">{{ s.host }}</p>
+    {% if s.online %}
+    <div class="grid grid-cols-2 gap-2 text-xs">
+      <div><span class="text-gray-500 dark:text-gray-400">Version</span><br><span class="font-medium">{{ s.version }}</span></div>
+      <div><span class="text-gray-500 dark:text-gray-400">Entities</span><br><span class="font-medium">{{ s.entity_count }}</span></div>
+      <div><span class="text-gray-500 dark:text-gray-400">Bike Entities</span><br><span class="font-medium">{{ s.bike_entities }}</span></div>
+      <div><span class="text-gray-500 dark:text-gray-400">Unavailable</span><br><span class="font-medium {{ 'text-red-500' if s.unavailable_bike > 0 else '' }}">{{ s.unavailable_bike }}</span></div>
+    </div>
+    {% else %}
+    <p class="text-xs text-red-500">Unreachable</p>
+    {% endif %}
+  </div>
+</div>
+
+{# Bike Computer #}
+{% set s = health.get('bike', {}) %}
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+  <div class="h-1 {{ 'bg-green-500' if s.online else 'bg-red-500' }}"></div>
+  <div class="p-4">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="font-semibold text-sm">{{ s.name or 'Bike Computer' }}</h3>
+      <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' if s.online else 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' }}">
+        {{ 'Online' if s.online else 'Offline' }}
+      </span>
+    </div>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">{{ s.host }}</p>
+    {% if s.online %}
+    <div class="grid grid-cols-2 gap-2 text-xs">
+      <div><span class="text-gray-500 dark:text-gray-400">SSH</span><br><span class="font-medium text-green-600">Online</span></div>
+      <div><span class="text-gray-500 dark:text-gray-400">HASS.Agent</span><br>
+        <span class="font-medium {{ 'text-green-600' if s.hass_agent else 'text-yellow-500' }}">{{ 'Connected' if s.hass_agent else 'Disconnected' }}</span>
+      </div>
+    </div>
+    {% else %}
+    <p class="text-xs text-red-500">Offline (SSH unreachable)</p>
+    {% endif %}
+  </div>
+</div>
+
+{# NAS #}
+{% set s = health.get('nas', {}) %}
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+  <div class="h-1 {{ 'bg-green-500' if s.online else 'bg-red-500' }}"></div>
+  <div class="p-4">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="font-semibold text-sm">{{ s.name or 'Synology NAS' }}</h3>
+      <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' if s.online else 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' }}">
+        {{ 'Online' if s.online else 'Offline' }}
+      </span>
+    </div>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">{{ s.host }}</p>
+    {% if s.online %}
+    <div class="text-xs"><span class="text-gray-500 dark:text-gray-400">SSH</span><br><span class="font-medium text-green-600">Online</span></div>
+    {% else %}
+    <p class="text-xs text-red-500">Offline (SSH unreachable)</p>
+    {% endif %}
+  </div>
+</div>
+
+{# MQTT #}
+{% set s = health.get('mqtt', {}) %}
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+  <div class="h-1 {{ 'bg-green-500' if s.online else 'bg-red-500' }}"></div>
+  <div class="p-4">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="font-semibold text-sm">{{ s.name or 'MQTT Broker' }}</h3>
+      <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' if s.online else 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' }}">
+        {{ 'Online' if s.online else 'Offline' }}
+      </span>
+    </div>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">{{ s.host }}</p>
+    {% if not s.online %}
+    <p class="text-xs text-red-500">Unreachable</p>
+    {% endif %}
+  </div>
+</div>

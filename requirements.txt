@@ -1,0 +1,11 @@
+flask
+flask-socketio
+flask-limiter
+paramiko
+requests
+python-dotenv
+psutil
+simple-websocket
+pystray
+Pillow
+pywin32

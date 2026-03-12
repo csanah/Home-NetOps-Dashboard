@@ -1,0 +1,319 @@
+{% set server = data.server %}
+{% set libs = data.libraries %}
+{% set recent = data.recently_added %}
+{% set ondeck = data.on_deck %}
+{% set history = data.history %}
+{% set bandwidth = data.bandwidth %}
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+  {# ── Server Status ── #}
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="h-1" style="background-color: {{ '#E5A00D' if server and not server.get('error') else '#d1d5db' }}"></div>
+    <div class="p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold text-sm flex items-center gap-2">
+          <svg class="w-4 h-4" style="color: #E5A00D" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Server Status
+        </h3>
+        {% if server and not server.get('error') %}
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' if server.online else 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' }}">
+          {{ 'Online' if server.online else 'Offline' }}
+        </span>
+        {% endif %}
+      </div>
+
+      {% if not data.has_token %}
+        <p class="text-xs text-gray-400">Configure Plex token in Settings</p>
+      {% elif server and server.get('error') %}
+        <p class="text-xs text-red-400">{{ server.error }}</p>
+      {% elif server and not server.get('error') %}
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <div class="text-[10px] text-gray-400 uppercase tracking-wider">Name</div>
+            <div class="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">{{ server.name }}</div>
+          </div>
+          <div>
+            <div class="text-[10px] text-gray-400 uppercase tracking-wider">Version</div>
+            <div class="text-sm font-medium text-gray-700 dark:text-gray-200">{{ server.version }}</div>
+          </div>
+          <div>
+            <div class="text-[10px] text-gray-400 uppercase tracking-wider">Platform</div>
+            <div class="text-sm font-medium text-gray-700 dark:text-gray-200">{{ server.platform }}</div>
+          </div>
+        </div>
+      {% else %}
+        <p class="text-xs text-gray-400">Loading...</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Library Overview ── #}
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="h-1" style="background-color: {{ '#E5A00D' if libs and not libs.get('error') else '#d1d5db' }}"></div>
+    <div class="p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold text-sm flex items-center gap-2">
+          <svg class="w-4 h-4" style="color: #E5A00D" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+          Libraries
+        </h3>
+        {% if libs and not libs.get('error') %}
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+          {{ libs.total_unwatched }} unwatched / {{ libs.total_items }} total
+        </span>
+        {% endif %}
+      </div>
+
+      {% if not data.has_token %}
+        <p class="text-xs text-gray-400">Configure Plex token in Settings</p>
+      {% elif libs and libs.get('error') %}
+        <p class="text-xs text-red-400">{{ libs.error }}</p>
+      {% elif libs and not libs.get('error') %}
+        {% if libs.sections %}
+          <div class="grid grid-cols-2 gap-2">
+            {% for section in libs.sections %}
+            <div class="flex items-center gap-2 p-2 rounded-lg bg-gray-50 dark:bg-gray-900/40">
+              {% if section.type == 'movie' %}
+                <svg class="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/></svg>
+              {% elif section.type == 'show' %}
+                <svg class="w-4 h-4 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              {% elif section.type == 'artist' %}
+                <svg class="w-4 h-4 text-purple-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
+              {% else %}
+                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+              {% endif %}
+              <div class="flex-1 min-w-0">
+                <div class="text-xs font-medium text-gray-700 dark:text-gray-200 truncate">{{ section.title }}</div>
+                <div class="text-[10px] text-gray-400">
+                  {%- if section.unwatched > 0 -%}
+                    <span class="text-amber-500 dark:text-amber-400 font-medium">{{ section.unwatched }} unwatched</span> / {{ section.count }}
+                  {%- else -%}
+                    {{ section.count }} items
+                  {%- endif -%}
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-xs text-gray-400">No libraries found</p>
+        {% endif %}
+      {% else %}
+        <p class="text-xs text-gray-400">Loading...</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Recently Added ── #}
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="h-1" style="background-color: {{ '#E5A00D' if recent and not recent.get('error') else '#d1d5db' }}"></div>
+    <div class="p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold text-sm flex items-center gap-2">
+          <svg class="w-4 h-4" style="color: #E5A00D" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+          Recently Added
+        </h3>
+        {% if recent and not recent.get('error') %}
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+          {{ recent['items'] | length }} items
+        </span>
+        {% endif %}
+      </div>
+
+      {% if not data.has_token %}
+        <p class="text-xs text-gray-400">Configure Plex token in Settings</p>
+      {% elif recent and recent.get('error') %}
+        <p class="text-xs text-red-400">{{ recent.error }}</p>
+      {% elif recent and not recent.get('error') %}
+        {% if recent['items'] %}
+          <div class="space-y-1 max-h-72 overflow-y-auto">
+            {% for item in recent['items'] %}
+            <div class="flex items-center gap-2 py-1.5 border-b border-gray-100 dark:border-gray-700/50 last:border-0">
+              {% if item.type == 'movie' %}
+                <svg class="w-3.5 h-3.5 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/></svg>
+              {% elif item.type == 'episode' %}
+                <svg class="w-3.5 h-3.5 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              {% elif item.type == 'track' %}
+                <svg class="w-3.5 h-3.5 text-purple-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"/></svg>
+              {% else %}
+                <svg class="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+              {% endif %}
+              <div class="flex-1 min-w-0">
+                <div class="text-xs text-gray-700 dark:text-gray-200 truncate">{{ item.title }}</div>
+                <div class="text-[10px] text-gray-400">{{ item.added_at }}</div>
+              </div>
+              {% if item.year %}
+              <span class="shrink-0 text-[10px] text-gray-400">{{ item.year }}</span>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-xs text-gray-400">No recently added media</p>
+        {% endif %}
+      {% else %}
+        <p class="text-xs text-gray-400">Loading...</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── On Deck / Continue Watching ── #}
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="h-1" style="background-color: {{ '#E5A00D' if ondeck and not ondeck.get('error') else '#d1d5db' }}"></div>
+    <div class="p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold text-sm flex items-center gap-2">
+          <svg class="w-4 h-4" style="color: #E5A00D" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          On Deck
+        </h3>
+        {% if ondeck and not ondeck.get('error') %}
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+          {{ ondeck['items'] | length }} items
+        </span>
+        {% endif %}
+      </div>
+
+      {% if not data.has_token %}
+        <p class="text-xs text-gray-400">Configure Plex token in Settings</p>
+      {% elif ondeck and ondeck.get('error') %}
+        <p class="text-xs text-red-400">{{ ondeck.error }}</p>
+      {% elif ondeck and not ondeck.get('error') %}
+        {% if ondeck['items'] %}
+          <div class="space-y-2 max-h-72 overflow-y-auto">
+            {% for item in ondeck['items'] %}
+            <div>
+              <div class="flex justify-between text-xs mb-0.5">
+                <span class="truncate mr-2 text-gray-700 dark:text-gray-200">{{ item.title }}</span>
+                <span class="shrink-0 text-gray-500 dark:text-gray-400">{{ item.progress }}%</span>
+              </div>
+              <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                <div class="h-1.5 rounded-full transition-all" style="width: {{ item.progress }}%; background-color: #E5A00D"></div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-xs text-gray-400">Nothing on deck</p>
+        {% endif %}
+      {% else %}
+        <p class="text-xs text-gray-400">Loading...</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Watch History ── #}
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="h-1" style="background-color: {{ '#E5A00D' if history and not history.get('error') else '#d1d5db' }}"></div>
+    <div class="p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold text-sm flex items-center gap-2">
+          <svg class="w-4 h-4" style="color: #E5A00D" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Watch History
+        </h3>
+        {% if history and not history.get('error') %}
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+          {{ history['items'] | length }} recent
+        </span>
+        {% endif %}
+      </div>
+
+      {% if not data.has_token %}
+        <p class="text-xs text-gray-400">Configure Plex token in Settings</p>
+      {% elif history and history.get('error') %}
+        <p class="text-xs text-red-400">{{ history.error }}</p>
+      {% elif history and not history.get('error') %}
+        {% if history['items'] %}
+          <div class="space-y-1 max-h-72 overflow-y-auto">
+            {% for item in history['items'] %}
+            <div class="flex items-center gap-2 py-1.5 border-b border-gray-100 dark:border-gray-700/50 last:border-0">
+              {% if item.type == 'movie' %}
+                <svg class="w-3.5 h-3.5 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/></svg>
+              {% elif item.type == 'episode' %}
+                <svg class="w-3.5 h-3.5 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              {% elif item.type == 'track' %}
+                <svg class="w-3.5 h-3.5 text-purple-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"/></svg>
+              {% else %}
+                <svg class="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+              {% endif %}
+              <div class="flex-1 min-w-0">
+                <div class="text-xs text-gray-700 dark:text-gray-200 truncate">{{ item.title }}</div>
+                <div class="text-[10px] text-gray-400">{{ item.viewed_at }}</div>
+              </div>
+              <span class="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium {{ 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' if item.account_name == 'csa70' else 'bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300' }}">
+                {{ item.account_name }}
+              </span>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-xs text-gray-400">No watch history</p>
+        {% endif %}
+      {% else %}
+        <p class="text-xs text-gray-400">Loading...</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Bandwidth Stats ── #}
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="h-1" style="background-color: {{ '#E5A00D' if bandwidth and not bandwidth.get('error') else '#d1d5db' }}"></div>
+    <div class="p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold text-sm flex items-center gap-2">
+          <svg class="w-4 h-4" style="color: #E5A00D" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+          Bandwidth Stats
+        </h3>
+        {% if bandwidth and not bandwidth.get('error') %}
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+          This month
+        </span>
+        {% endif %}
+      </div>
+
+      {% if not data.has_token %}
+        <p class="text-xs text-gray-400">Configure Plex token in Settings</p>
+      {% elif bandwidth and bandwidth.get('error') %}
+        <p class="text-xs text-red-400">{{ bandwidth.error }}</p>
+      {% elif bandwidth and not bandwidth.get('error') %}
+        {% if bandwidth.accounts %}
+          <div class="space-y-3 mb-3">
+            {% for acct in bandwidth.accounts %}
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="font-medium {{ 'text-blue-600 dark:text-blue-400' if acct.name == 'csa70' else 'text-pink-600 dark:text-pink-400' }}">{{ acct.name }}</span>
+                <span class="text-gray-500 dark:text-gray-400">{{ acct.total_gb }} GB</span>
+              </div>
+              <div class="flex gap-1 text-[10px] text-gray-400">
+                <span>LAN: {{ acct.lan_gb }} GB</span>
+                <span class="mx-1">|</span>
+                <span>WAN: {{ acct.wan_gb }} GB</span>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          {# LAN vs WAN bar #}
+          <div>
+            <div class="flex justify-between text-[10px] text-gray-400 mb-1">
+              <span>LAN {{ bandwidth.lan_pct }}%</span>
+              <span>WAN {{ 100 - bandwidth.lan_pct }}%</span>
+            </div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 flex overflow-hidden">
+              <div class="h-2 bg-green-500 dark:bg-green-400 transition-all" style="width: {{ bandwidth.lan_pct }}%"></div>
+              <div class="h-2 bg-orange-500 dark:bg-orange-400 transition-all" style="width: {{ 100 - bandwidth.lan_pct }}%"></div>
+            </div>
+            <div class="flex gap-3 mt-1.5 text-[10px] text-gray-400">
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span> LAN {{ bandwidth.total_lan_gb }} GB</span>
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-orange-500 inline-block"></span> WAN {{ bandwidth.total_wan_gb }} GB</span>
+            </div>
+          </div>
+        {% else %}
+          <p class="text-xs text-gray-400">No bandwidth data</p>
+        {% endif %}
+      {% else %}
+        <p class="text-xs text-gray-400">Loading...</p>
+      {% endif %}
+    </div>
+  </div>
+
+</div>

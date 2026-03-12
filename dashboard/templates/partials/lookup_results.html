@@ -1,0 +1,20 @@
+{% if error %}
+<div class="p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-lg text-sm">{{ error }}</div>
+{% elif results %}
+{% if results.get('error') %}
+<div class="p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-lg text-sm">{{ results.error }}</div>
+{% else %}
+<div class="space-y-3">
+  <h4 class="text-sm font-semibold">Results for <code class="bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded">{{ target }}</code></h4>
+
+  {% for key, label in [('nslookup', 'DNS Lookup'), ('ipset_alien', 'ALIEN Block List'), ('ipset_tor', 'TOR Block List'), ('ipset_ips', 'IPS Block List'), ('geoip', 'GeoIP Rules'), ('conntrack', 'Connection Tracking')] %}
+  {% if results.get(key) %}
+  <div>
+    <h5 class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{{ label }}</h5>
+    <pre class="bg-gray-950 text-green-400 text-xs font-mono p-3 rounded-lg overflow-x-auto max-h-40 scrollbar-thin">{{ results[key] }}</pre>
+  </div>
+  {% endif %}
+  {% endfor %}
+</div>
+{% endif %}
+{% endif %}

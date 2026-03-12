@@ -1,0 +1,102 @@
+{# Summary Status Bar — only count visible cards #}
+{% set visible_systems = [] %}
+{% if card_visibility.udm %}{% if visible_systems.append('udm') %}{% endif %}{% endif %}
+{% if card_visibility.proxmox %}{% if visible_systems.append('proxmox') %}{% endif %}{% endif %}
+{% if card_visibility.ha %}{% if visible_systems.append('ha') %}{% endif %}{% endif %}
+{% if card_visibility.nas %}{% if visible_systems.append('nas') %}{% endif %}{% endif %}
+{% if card_visibility.mqtt %}{% if visible_systems.append('mqtt') %}{% endif %}{% endif %}
+{% if card_visibility.media_center %}{% if visible_systems.append('media_center') %}{% endif %}{% endif %}
+{% set total = visible_systems | length %}
+{% set down_list = [] %}
+{% for key in visible_systems %}
+  {% if not health.get(key, {}).get('online', false) %}
+    {% if down_list.append(key) %}{% endif %}
+  {% endif %}
+{% endfor %}
+<div class="summary-bar mb-4 p-3 rounded-lg flex flex-wrap items-center gap-4 text-sm
+  {{ 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' if down_list | length == 0 else 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800' }}">
+  {% if down_list | length == 0 %}
+  <div class="flex items-center gap-2 font-medium text-green-700 dark:text-green-300">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+    All {{ total }} systems online
+  </div>
+  {% else %}
+  <div class="flex items-center gap-2 font-medium text-red-700 dark:text-red-300">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+    {{ down_list | length }} system{{ 's' if down_list | length > 1 else '' }} down
+  </div>
+  {% endif %}
+  <span class="text-gray-400 dark:text-gray-500 hidden sm:inline">|</span>
+  <div class="text-gray-600 dark:text-gray-400">
+    <span class="font-medium">{{ health.get('udm', {}).get('clients', '?') }}</span> clients
+  </div>
+  <span class="text-gray-400 dark:text-gray-500 hidden sm:inline">|</span>
+  <div class="text-gray-600 dark:text-gray-400">
+    WAN: <span class="font-medium">{{ health.get('udm', {}).get('uptime', '?') }}</span>
+  </div>
+</div>
+
+{# Alerts — only for visible cards #}
+{% set alerts = [] %}
+{% for key in visible_systems %}
+  {% set s = health.get(key, {}) %}
+  {% if not s.get('online', false) %}
+    {% set card_names = {'udm': names.udm, 'proxmox': names.proxmox, 'ha': names.ha, 'nas': names.nas, 'mqtt': names.mqtt, 'media_center': names.media_center} %}
+    {% if alerts.append({'level': 'error', 'message': card_names.get(key, key) + ' is unreachable'}) %}{% endif %}
+  {% endif %}
+{% endfor %}
+{% if card_visibility.proxmox and health.get('proxmox', {}).get('online') %}
+  {% set stopped_vms = health.get('proxmox', {}).get('vms', []) | selectattr('status', 'equalto', 'stopped') | list %}
+  {% if stopped_vms | length > 0 %}
+    {% if alerts.append({'level': 'warning', 'message': 'Proxmox: ' ~ stopped_vms | length ~ ' VM(s) stopped: ' ~ stopped_vms | map(attribute='name') | join(', ')}) %}{% endif %}
+  {% endif %}
+{% endif %}
+
+{% if alerts | length > 0 %}
+<div class="mb-4 space-y-2">
+  {% for alert in alerts %}
+  <div class="flex items-start gap-2 p-3 rounded-lg text-sm
+    {{ 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300' if alert.level == 'error' else 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300' }}">
+    <svg class="w-4 h-4 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+    {{ alert.message }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{# Bandwidth Strip #}
+{% include "partials/bandwidth.html" %}
+
+{# Card Grid — only render visible cards #}
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+  {% if card_visibility.media_center %}
+  <div data-system-key="media_center" data-online="{{ 'true' if health.get('media_center', {}).online else 'false' }}">
+    {% include "partials/cards/media_center.html" %}
+  </div>
+  {% endif %}
+  {% if card_visibility.udm %}
+  <div class="xl:col-span-2" data-system-key="udm" data-online="{{ 'true' if health.get('udm', {}).online else 'false' }}">
+    {% include "partials/cards/udm.html" %}
+  </div>
+  {% endif %}
+  {% if card_visibility.proxmox %}
+  <div class="xl:col-span-2" data-system-key="proxmox" data-online="{{ 'true' if health.get('proxmox', {}).online else 'false' }}">
+    {% include "partials/cards/proxmox.html" %}
+  </div>
+  {% endif %}
+  {% if card_visibility.ha %}
+  <div data-system-key="ha" data-online="{{ 'true' if health.get('ha', {}).online else 'false' }}">
+    {% include "partials/cards/ha.html" %}
+  </div>
+  {% endif %}
+  {% if card_visibility.nas %}
+  <div data-system-key="nas" data-online="{{ 'true' if health.get('nas', {}).online else 'false' }}">
+    {% include "partials/cards/nas.html" %}
+  </div>
+  {% endif %}
+  {% if card_visibility.mqtt %}
+  <div data-system-key="mqtt" data-online="{{ 'true' if health.get('mqtt', {}).online else 'false' }}">
+    {% include "partials/cards/mqtt.html" %}
+  </div>
+  {% endif %}
+</div>
